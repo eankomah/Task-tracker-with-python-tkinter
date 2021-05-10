@@ -45,7 +45,8 @@ class Tracker:
         self.header_frame = ttk.Frame(master)
         self.header_frame.pack()
 
-        ttk.Label(self.header_frame, text="Welcome to Task Tracker App", font=('Arial', 18, 'bold')).grid(row=0, column=0, columnspan=2 , pady=10)
+        ttk.Label(self.header_frame, text="Welcome to Task Tracker App\n =======================", foreground="#FFF", font=('Arial', 22, 'bold')).\
+            grid(row=0, column=0, columnspan=2 , pady=20)
 
         # Time Frame
         self.time_frame = ttk.Frame(master)
@@ -65,7 +66,7 @@ class Tracker:
         # Declare input Time frame fields
         self.entry_date = DateEntry(self.time_frame, width=24, background='darkblue', foreground='white', borderwidth=2, font=('Arial', 12))
 
-        self.hr_start = Spinbox(self.time_frame, from_=0, to_=23, width=7, state='readonly', justify=CENTER, font=('Arial', 12))
+        self.hr_start = Spinbox(self.time_frame, from_=0, to_=23, width=7,state='readonly', justify=CENTER, font=('Arial', 12))
         self.min_start = Spinbox(self.time_frame, from_=0, to_=59, width=6, state='readonly', justify=CENTER, font=('Arial', 12))
         self.sec_start = Spinbox(self.time_frame, from_=0, to_=59, width=6, state='readonly', justify=CENTER, font=('Arial', 12))
 
@@ -123,7 +124,14 @@ class Tracker:
 
         # Validate time entries
         if ending_timestamp < starting_timestamp:
+            amount_made = "-"
+            hrs_spent ="-"
             messagebox.showinfo(title="ERROR", message="Invalid Entry for End Time. End Time can't be lower than Start Time")
+        elif datetime.now().date() < date:
+            amount_made = "-"
+            hrs_spent = "-"
+            messagebox.showinfo(title="ERROR",
+                                message="Date can't be higher than today's date")
         else:
             time_spent = ending_timestamp - starting_timestamp
 
@@ -131,56 +139,53 @@ class Tracker:
 
             amount_made = hrs_spent*5
 
-        # print(hrs_spent)
-        # print(amount_made)
+            display_amount_label = ttk.Label(self.time_frame, text="" ,font=('Arial', 15, 'bold'))
+            display_amount_label.grid(row=4, column=1, columnspan=3, padx=5, sticky='sw')
 
-        display_amount_label = ttk.Label(self.time_frame, text="" ,font=('Arial', 15, 'bold'))
-        display_amount_label.grid(row=4, column=1, columnspan=3, padx=5, sticky='sw')
+            display_amount_label.config(text="You made $" + str(amount_made) + " in " + str(hrs_spent)+"hrs")
 
-        display_amount_label.config(text="You made $" + str(amount_made) + " in " + str(hrs_spent)+"hrs")
+            # grab entries and save them in excel
+            wb = openpyxl.load_workbook("Task_tracker_Data.xlsx")
+            ws = wb.active
+            ws.cell(column=1, row=ws.max_row + 1, value=date_str)
+            ws.cell(column=2, row=ws.max_row, value=s_time)
+            ws.cell(column=3, row=ws.max_row, value=e_time)
+            ws.cell(column=4, row=ws.max_row, value=hrs_spent)
+            ws.cell(column=5, row=ws.max_row, value=amount_made)
 
-        # grab entries and save them in excel
-        wb = openpyxl.load_workbook("Task_tracker_Data.xlsx")
-        ws = wb.active
-        ws.cell(column=1, row=ws.max_row + 1, value=date_str)
-        ws.cell(column=2, row=ws.max_row, value=s_time)
-        ws.cell(column=3, row=ws.max_row, value=e_time)
-        ws.cell(column=4, row=ws.max_row, value=hrs_spent)
-        ws.cell(column=5, row=ws.max_row, value=amount_made)
-
-        wb.save("Task_tracker_Data.xlsx")
+            wb.save("Task_tracker_Data.xlsx")
 
 
-        messagebox.showinfo(title="Task Saved",
-                            message="Your task has been saved and export to excel successfully")
+            messagebox.showinfo(title="Task Saved",
+                                message="Your task has been saved and export to excel successfully")
 
-        # Load Workbook and display to user
-        # wb = openpyxl.load_workbook('Task_tracker_Data.xlsx')
-        #
-        # ws= wb.active
-        # Task_date = ws['A']
-        # Start_Time = ws['B']
-        # End_Time = ws['C']
-        # Hours_spent = ws['D']
-        # Amount_made = ws['E']
-        #
-        # date_label = ttk.Label(self.label_frame, text="")
-        # date_label.pack(pady=20)
-        #
-        # amount_label = ttk.Label(self.label_frame, text="")
-        # amount_label.pack(pady=20)
-        #
-        # date_list=''
-        # for cell in Task_date:
-        #     date_list = f'{date_list + str(cell.value)}\n'
-        #
-        # # date_label.config(text=date_list)
-        #
-        # amount_list = ''
-        # for cell in range(int(amount_made)):
-        #     amount_list = f'{amount_list + str(cell.value)}\n'
-        #
-        # amount_label.config(text=amount_list)
+            # Load Workbook and display to user
+            # wb = openpyxl.load_workbook('Task_tracker_Data.xlsx')
+            #
+            # ws= wb.active
+            # Task_date = ws['A']
+            # Start_Time = ws['B']
+            # End_Time = ws['C']
+            # Hours_spent = ws['D']
+            # Amount_made = ws['E']
+            #
+            # date_label = ttk.Label(self.label_frame, text="")
+            # date_label.pack(pady=20)
+            #
+            # amount_label = ttk.Label(self.label_frame, text="")
+            # amount_label.pack(pady=20)
+            #
+            # date_list=''
+            # for cell in Task_date:
+            #     date_list = f'{date_list + str(cell.value)}\n'
+            #
+            # # date_label.config(text=date_list)
+            #
+            # amount_list = ''
+            # for cell in range(int(amount_made)):
+            #     amount_list = f'{amount_list + str(cell.value)}\n'
+            #
+            # amount_label.config(text=amount_list)
 
 
 
@@ -188,8 +193,10 @@ class Tracker:
 
     def reset(self):
         pass
-        # self.entry_start_time.delete(0, 'end')
-        # self.entry_end_time.delete(0, 'end')
+        # self.s_hr = StringVar(time_frame)
+        # self.s_hr.set("4")
+        # hr_start = Spinbox(root, from_=1, to=12, textvariable=s_hr)
+
 
 
 def main():
